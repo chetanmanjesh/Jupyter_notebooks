@@ -1,0 +1,221 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "import numpy as np\n",
+    "import math\n",
+    "import os\n",
+    "import pickle\n",
+    "import operator\n",
+    "import matplotlib.pyplot as plt\n",
+    "import matplotlib.image as mpimg\n",
+    "import urllib2\n",
+    "import time\n",
+    "import csv\n",
+    "from collections import defaultdict\n",
+    "from scipy.misc import imread\n",
+    "from scipy.misc import imresize\n",
+    "from gensim import corpora, models\n",
+    "from collections import defaultdict\n",
+    "import matplotlib.pyplot as plot\n",
+    "import operator\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "# Load results\n",
+    "with open(\"data2/50-topic-res-all-filtered.txt\", \"rb\") as fp:\n",
+    "    img_by_topic = pickle.load(fp)\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "shot_dict = {}\n",
+    "# read from csv file\n",
+    "with open('shot_info.csv', 'rb') as csvfile:\n",
+    "    reader = csv.reader(csvfile, delimiter=' ', quotechar='|')\n",
+    "    for row in reader:\n",
+    "         shot_dict[row[0]] = [int(row[1].split(',')[0]), int(row[2])]\n",
+    "            "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "# load the list of images\n",
+    "img_list = np.load('results_hannah_10_full_frame/hannah_10_img_list_filtered.npy')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "a = []\n",
+    "topic_shot_img = {}\n",
+    "topic_shot_dict = {}\n",
+    "pshot = 'shot001,'\n",
+    "for topic in range(50):\n",
+    "    topic_shot_dict[topic] = defaultdict(float) \n",
+    "    topic_shot_img[topic] = {}\n",
+    "    for index in range(0,100):\n",
+    "        int_frame = int(img_list[img_by_topic[topic][index][0]].split('.')[0].split('/')[-1])\n",
+    "        for key in shot_dict:\n",
+    "            if(int_frame >= shot_dict[key][0] and  int_frame <= shot_dict[key][1]):\n",
+    "                topic_shot_dict[topic][key] += 1\n",
+    "                if topic_shot_dict[topic][key] == 1:\n",
+    "                    topic_shot_img[topic][key] = img_list[img_by_topic[topic][index][0]]\n",
+    "    a.append(len(topic_shot_dict[topic]))\n",
+    "    for key in topic_shot_dict[topic]:\n",
+    "        #print key\n",
+    "        temp = topic_shot_dict[topic][key]\n",
+    "        topic_shot_dict[topic][key] /= float((shot_dict[key][1]-shot_dict[key][0]+1)/10)\n",
+    "        if(topic_shot_dict[topic][key] > 1):\n",
+    "            topic_shot_dict[topic][key] = 1.0\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {
+    "scrolled": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "0\n"
+     ]
+    },
+    {
+     "ename": "IOError",
+     "evalue": "[Errno 2] No such file or directory: '00050121.png'",
+     "output_type": "error",
+     "traceback": [
+      "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+      "\u001b[0;31mIOError\u001b[0m                                   Traceback (most recent call last)",
+      "\u001b[0;32m<ipython-input-6-846c421b7ab4>\u001b[0m in \u001b[0;36m<module>\u001b[0;34m()\u001b[0m\n\u001b[1;32m     45\u001b[0m                 \u001b[0mcommand\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0;34m\"sshpass -p \\'cmanjesh\\' scp cmanjesh@renyi.cs.umass.edu:\"\u001b[0m\u001b[0;34m+\u001b[0m\u001b[0mimage_address\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0msplit\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m'/'\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;36m8\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m+\u001b[0m\u001b[0;34m\" \"\u001b[0m\u001b[0;34m+\u001b[0m\u001b[0mimage_address\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0msplit\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m'/'\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;36m8\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     46\u001b[0m                 \u001b[0mos\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0msystem\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mcommand\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m---> 47\u001b[0;31m                 \u001b[0mI\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mimread\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mimage_address\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0msplit\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m'/'\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;36m8\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m     48\u001b[0m                 \u001b[0;31m#I = exposure.equalize_hist(I)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     49\u001b[0m                 \u001b[0;31m#I += 15\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/Users/Chetan/anaconda2/lib/python2.7/site-packages/scipy/misc/pilutil.pyc\u001b[0m in \u001b[0;36mimread\u001b[0;34m(name, flatten, mode)\u001b[0m\n\u001b[1;32m    154\u001b[0m     \"\"\"\n\u001b[1;32m    155\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 156\u001b[0;31m     \u001b[0mim\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mImage\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mopen\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mname\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    157\u001b[0m     \u001b[0;32mreturn\u001b[0m \u001b[0mfromimage\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mim\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mflatten\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mflatten\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mmode\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mmode\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    158\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;32m/Users/Chetan/anaconda2/lib/python2.7/site-packages/PIL/Image.pyc\u001b[0m in \u001b[0;36mopen\u001b[0;34m(fp, mode)\u001b[0m\n\u001b[1;32m   2475\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   2476\u001b[0m     \u001b[0;32mif\u001b[0m \u001b[0mfilename\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m-> 2477\u001b[0;31m         \u001b[0mfp\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mbuiltins\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mopen\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mfilename\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m\"rb\"\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m   2478\u001b[0m         \u001b[0mexclusive_fp\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mTrue\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   2479\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;31mIOError\u001b[0m: [Errno 2] No such file or directory: '00050121.png'"
+     ]
+    }
+   ],
+   "source": [
+    "from skimage import exposure\n",
+    "\n",
+    "path = '/mnt/nfs/scratch1/souyoungjin/datasets/Hannah/all_frames'\n",
+    "plot.close()\n",
+    "new_topic_shot_dict = {}\n",
+    "num_topics = 50\n",
+    "plt.close()\n",
+    "for topic in range(50):\n",
+    "    print topic\n",
+    "    new_topic_shot_dict[topic] = sorted(topic_shot_dict[topic].items(), key=operator.itemgetter(1), reverse = True)\n",
+    "    \n",
+    "    nrows = len(new_topic_shot_dict[topic])/float(5)\n",
+    "    \n",
+    "    if (nrows <= 1):\n",
+    "        nrows = 2\n",
+    "    else:\n",
+    "        nrows = math.ceil(nrows)\n",
+    "    \n",
+    "    \n",
+    "    fig, ax = plt.subplots(nrows=int(nrows), ncols=5, dpi=160)\n",
+    "    \n",
+    "    fig.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=None, hspace=0.3)\n",
+    "    fig.suptitle(str(num_topics)+' Topics: Topic '+str(topic+1))\n",
+    "    i = 0\n",
+    "    \n",
+    "    if(topic == 0):\n",
+    "        fig.suptitle('50 topics visualized with median frame for each shot in each Topic\\n Topic 1                           \\n                                 .\\n')\n",
+    "    else:\n",
+    "        fig.suptitle('Topic '+str(topic+1))\n",
+    "    \n",
+    "    for row in ax:\n",
+    "            for col in row:\n",
+    "                if i == len(new_topic_shot_dict[topic]):\n",
+    "                    col.axis('off')\n",
+    "                    continue\n",
+    "                image_address = img_list[img_by_topic[topic][i][0]]\n",
+    "                (key, score) = new_topic_shot_dict[topic][i]\n",
+    "                if(key == pshot):\n",
+    "                    i += 1\n",
+    "                    col.axis('off')\n",
+    "                    continue\n",
+    "                #image = (int(shot_dict[key][0]) + int(shot_dict[key][1]))/2 \n",
+    "                #image_address = path+'/%08d.png'%image\n",
+    "                image_address = topic_shot_img[topic][key]\n",
+    "                command = \"sshpass -p \\'cmanjesh\\' scp cmanjesh@renyi.cs.umass.edu:\"+image_address.split('/')[8]+\" \"+image_address.split('/')[8]\n",
+    "                os.system(command)\n",
+    "                I = imread(image_address.split('/')[8])\n",
+    "                #I = exposure.equalize_hist(I)\n",
+    "                #I += 15\n",
+    "                col.imshow(I, vmin=100, vmax=255)\n",
+    "                col.axis('off')\n",
+    "                col.set_title(key.split(',')[0]+':'+'%.3f'%score, fontsize=5)\n",
+    "                os.system('rm '+image_address.split('/')[8])\n",
+    "                i += 1\n",
+    "    plt.show() "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 2",
+   "language": "python",
+   "name": "python2"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 2
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython2",
+   "version": "2.7.14"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
